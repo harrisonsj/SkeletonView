@@ -14,5 +14,16 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = "9.0"
   s.swift_version = "5.0"
   s.source       = { :git => "https://github.com/Juanpe/SkeletonView.git", :tag => s.version.to_s }
-  s.source_files  = "Sources/**/*"
+  s.default_subspec = 'Core'
+
+  s.subspec 'Core' do |sp|
+    sp.source_files  = "Sources/Core/**/*"
+  end
+
+  s.subspec 'Rx' do |sp|
+    sp.source_files = 'Sources/Rx/**/*'
+    sp.dependency 'RxSwift'
+    sp.dependency 'RxCocoa'
+    sp.dependency 'RxDataSources'
+  end
 end

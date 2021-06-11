@@ -13,8 +13,8 @@ public typealias ReusableCellIdentifier = String
 class SkeletonCollectionDataSource: NSObject {
     static let automaticNumberOfRows = -1
 
-    weak var originalTableViewDataSource: SkeletonTableViewDataSource?
-    weak var originalCollectionViewDataSource: SkeletonCollectionViewDataSource?
+    public weak var originalTableViewDataSource: SkeletonTableViewDataSource?
+    public weak var originalCollectionViewDataSource: SkeletonCollectionViewDataSource?
     var rowHeight: CGFloat = 0.0
     var originalRowHeight: CGFloat = 0.0
     
