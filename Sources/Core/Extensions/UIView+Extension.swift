@@ -14,9 +14,11 @@ enum ViewAssociatedKeys {
     static var labelViewState = "labelViewState"
     static var imageViewState = "imageViewState"
     static var buttonViewState = "buttonViewState"
+    static var headerFooterViewState = "headerFooterViewState"
     static var currentSkeletonConfig = "currentSkeletonConfig"
     static var skeletonCornerRadius = "skeletonCornerRadius"
     static var disabledWhenSkeletonIsActive = "disabledWhenSkeletonIsActive"
+    static var delayedShowSkeletonWorkItem = "delayedShowSkeletonWorkItem"
 }
 // codebeat:enable[TOO_MANY_IVARS]
 
@@ -53,5 +55,10 @@ extension UIView {
     
     var isSuperviewAStackView: Bool {
         superview is UIStackView
+    }
+    
+    var delayedShowSkeletonWorkItem: DispatchWorkItem? {
+        get { return ao_get(pkey: &ViewAssociatedKeys.delayedShowSkeletonWorkItem) as? DispatchWorkItem }
+        set { ao_setOptional(newValue, pkey: &ViewAssociatedKeys.delayedShowSkeletonWorkItem) }
     }
 }

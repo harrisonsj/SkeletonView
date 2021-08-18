@@ -4,10 +4,12 @@
     <a href="https://github.com/Juanpe/SkeletonView/actions?query=workflow%3ACI">
       <img src="https://github.com/Juanpe/SkeletonView/workflows/CI/badge.svg">
     </a>
-    <a href="https://codebeat.co/projects/github-com-juanpe-skeletonview-master"><img alt="codebeat badge" src="https://codebeat.co/badges/f854fdfd-31e5-4689-ba04-075d83653e60" /></a>
-    <img src="http://img.shields.io/badge/dependency%20manager-swiftpm%2Bcocoapods%2Bcarthage-green" />
-    <img src="https://img.shields.io/badge/platforms-ios%2Btvos-green" />
-    <a href="https://badge.bow-swift.io/recipe?name=SkeletonView&description=An%20elegant%20way%20to%20show%20users%20that%20something%20is%20happening%20and%20also%20prepare%20them%20to%20which%20contents%20he%20is%20waiting&url=https://github.com/juanpe/skeletonview&owner=Juanpe&avatar=https://avatars0.githubusercontent.com/u/1409041?v=4&tag=1.8.7"><img src="https://raw.githubusercontent.com/bow-swift/bow-art/master/badges/nef-playgrounds-badge.svg" alt="SkeletonView Playground" style="height:20px"></a>   
+    <a href="https://codebeat.co/projects/github-com-juanpe-skeletonview-main"><img alt="codebeat badge" src="https://codebeat.co/badges/1f37bbab-a1c8-4a4a-94d7-f21740d461e9" /></a>
+    <a href="https://cocoapods.org/pods/SkeletonView"><img src="https://img.shields.io/cocoapods/v/SkeletonView.svg?style=flat"></a>
+    <a href="https://github.com/Carthage/Carthage/"><img src="https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat"></a>
+    <a href="https://swift.org/package-manager/"><img src="https://img.shields.io/badge/SPM-supported-Green.svg?style=flat"></a>
+    <img src="https://img.shields.io/badge/platforms-iOS_tvOS-green" />
+    <a href="https://badge.bow-swift.io/recipe?name=SkeletonView&description=An%20elegant%20way%20to%20show%20users%20that%20something%20is%20happening%20and%20also%20prepare%20them%20to%20which%20contents%20he%20is%20waiting&url=https://github.com/juanpe/skeletonview&owner=Juanpe&avatar=https://avatars0.githubusercontent.com/u/1409041?v=4&tag=1.20.0"><img src="https://raw.githubusercontent.com/bow-swift/bow-art/master/badges/nef-playgrounds-badge.svg" alt="SkeletonView Playground" style="height:20px"></a>   
 </p>
 
 <p align="center">
@@ -37,12 +39,12 @@ Enjoy it! 🙂
   - [🔠 Texts](#-texts)
   - [🦋 Appearance](#-appearance)
   - [🎨 Custom colors](#-custom-colors)
-        - [Image captured from website https://flatuicolors.com](#image-captured-from-website-httpsflatuicolorscom)
   - [🏃‍♀️ Animations](#️-animations)
   - [🏄 Transitions](#-transitions)
 - [✨ Miscellaneous](#-miscellaneous)
 - [❤️ Contributing](#️-contributing)
 - [📢 Mentions](#-mentions)
+- [🏆 Sponsors](#-sponsors)
 - [👨🏻‍💻 Author](#-author)
 - [👮🏻 License](#-license)
 
@@ -169,19 +171,16 @@ If you want to show the skeleton in a ```UITableView```, you need to conform to 
 
 ``` swift
 public protocol SkeletonTableViewDataSource: UITableViewDataSource {
-    func numSections(in collectionSkeletonView: UITableView) -> Int
+    func numSections(in collectionSkeletonView: UITableView) -> Int // Default: 1
     func collectionSkeletonView(_ skeletonView: UITableView, numberOfRowsInSection section: Int) -> Int
     func collectionSkeletonView(_ skeletonView: UITableView, cellIdentifierForRowAt indexPath: IndexPath) -> ReusableCellIdentifier
+    func collectionSkeletonView(_ skeletonView: UITableView, skeletonCellForRowAt indexPath: IndexPath) -> UITableViewCell? // Default: nil
+    func collectionSkeletonView(_ skeletonView: UITableView, prepareCellForSkeleton cell: UITableViewCell, at indexPath: IndexPath)
 }
 ```
 As you can see, this protocol inherits from ```UITableViewDataSource```, so you can replace this protocol with the skeleton protocol.
 
-This protocol has a default implementation:
-
-``` swift
-func numSections(in collectionSkeletonView: UITableView) -> Int
-// Default: 1
-```
+This protocol has a default implementation for some methods. For example, the number of rows for each section is calculated in runtime:
 
 ``` swift
 func collectionSkeletonView(_ skeletonView: UITableView, numberOfRowsInSection section: Int) -> Int
@@ -191,19 +190,32 @@ func collectionSkeletonView(_ skeletonView: UITableView, numberOfRowsInSection s
 
 > 📣 **IMPORTANT!** 
 >
-> If you return `SkeletonCollectionDataSource.automaticNumberOfRows` in the above method, it acts like the default behavior (i.e. it calculates how many cells needed to populate the whole tableview).
+> If you return `UITableView.automaticNumberOfSkeletonRows` in the above method, it acts like the default behavior (i.e. it calculates how many cells needed to populate the whole tableview).
 
 There is only one method you need to implement to let Skeleton know the cell identifier. This method doesn't have default implementation:
- ``` swift
- func collectionSkeletonView(_ skeletonView: UITableView, cellIdentifierForRowAt indexPath: IndexPath) -> ReusableCellIdentifier
- ```
-
-**Example**
  ``` swift
  func collectionSkeletonView(_ skeletonView: UITableView, cellIdentifierForRowAt indexPath: IndexPath) -> ReusableCellIdentifier {
     return "CellIdentifier"
 }
  ```
+ 
+ By default, the library dequeues the cells from each indexPath, but you can also do this if you want to make some changes before the skeleton appears:
+ ``` swift
+ func collectionSkeletonView(_ skeletonView: UITableView, skeletonCellForRowAt indexPath: IndexPath) -> UITableViewCell? {
+     let cell = skeletonView.dequeueReusableCell(withIdentifier: "CellIdentifier", for: indexPath) as? Cell
+     cell?.textField.isHidden = indexPath.row == 0
+     return cell
+ }
+ ```
+ 
+If you prefer to leave the deque part to the library you can configure the cell using this method:
+ ``` swift
+ func collectionSkeletonView(_ skeletonView: UITableView, prepareCellForSkeleton cell: UITableViewCell, at indexPath: IndexPath) {
+     let cell = cell as? Cell
+     cell?.textField.isHidden = indexPath.row == 0
+ }
+ ```
+
  
 Besides, you can skeletonize both the headers and footers. You need to conform to `SkeletonTableViewDelegate` protocol.
 
@@ -232,10 +244,12 @@ For `UICollectionView`, you need to conform to `SkeletonCollectionViewDataSource
 
 ``` swift
 public protocol SkeletonCollectionViewDataSource: UICollectionViewDataSource {
-    func numSections(in collectionSkeletonView: UICollectionView) -> Int // default: 1
+    func numSections(in collectionSkeletonView: UICollectionView) -> Int  // default: 1
     func collectionSkeletonView(_ skeletonView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     func collectionSkeletonView(_ skeletonView: UICollectionView, cellIdentifierForItemAt indexPath: IndexPath) -> ReusableCellIdentifier
     func collectionSkeletonView(_ skeletonView: UICollectionView, supplementaryViewIdentifierOfKind: String, at indexPath: IndexPath) -> ReusableCellIdentifier? // default: nil
+    func collectionSkeletonView(_ skeletonView: UICollectionView, skeletonCellForItemAt indexPath: IndexPath) -> UICollectionViewCell?  // default: nil
+    func collectionSkeletonView(_ skeletonView: UICollectionView, prepareCellForSkeleton cell: UICollectionViewCell, at indexPath: IndexPath)
 }
 ```
 
@@ -504,6 +518,24 @@ By default, the user interaction is disabled for skeletonized items, but if you 
 view.isUserInteractionDisabledWhenSkeletonIsActive = false  // The view will be active when the skeleton will be active.
 ```
 
+**Delayed show skeleton**
+
+You can delay the presentation of the skeleton if the views update quickly.
+
+```swift
+func showSkeleton(usingColor: UIColor,
+                  animated: Bool,
+                  delay: TimeInterval,
+                  transition: SkeletonTransitionStyle)
+```
+
+```swift
+func showGradientSkeleton(usingGradient: SkeletonGradient,
+                          animated: Bool,
+                          delay: TimeInterval,
+                          transition: SkeletonTransitionStyle)
+```
+
 **Debug**
 
 To facilitate the debug tasks when something is not working fine. **`SkeletonView`** has some new tools.
@@ -533,11 +565,11 @@ Then, when the skeleton appears, you can see the view hierarchy in the Xcode con
 
 * iOS 9.0+
 * tvOS 9.0+
-* Swift 5
-
+* Swift 5.3
 
 ## ❤️ Contributing
 This is an open source project, so feel free to contribute. How?
+
 - Open an [issue](https://github.com/Juanpe/SkeletonView/issues/new).
 - Send feedback via [email](mailto://juanpecatalan.com).
 - Propose your own fixes, suggestions and open a pull request with the changes.
@@ -563,7 +595,12 @@ For more information, please read the [contributing guidelines](https://github.c
 - [Swift News #36](https://www.youtube.com/watch?v=mAGpsQiy6so)
 - [Best iOS articles, new tools & more](https://medium.com/flawless-app-stories/best-ios-articles-new-tools-more-fcbe673e10d)
 
+## 🏆 Sponsors
 
+Open-source projects cannot live long without your help. If you find **SkeletonView** is useful, please consider supporting this 
+project by becoming a sponsor. 
+
+Become a sponsor through [GitHub Sponsors](https://github.com/sponsors/Juanpe) :heart:
 
 ## 👨🏻‍💻 Author
 

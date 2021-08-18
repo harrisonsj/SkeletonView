@@ -22,7 +22,6 @@ extension UIView {
 
 extension UILabel {
     var desiredHeightBasedOnNumberOfLines: CGFloat {
-        let lineHeight = constraintHeight ?? SkeletonAppearance.default.multilineHeight
         let spaceNeededForEachLine = lineHeight * CGFloat(numberOfLines)
         let spaceNeededForSpaces = skeletonLineSpacing * CGFloat(numberOfLines - 1)
         let padding = paddingInsets.top + paddingInsets.bottom
@@ -119,6 +118,16 @@ extension UIButton {
         
         startTransition { [weak self] in
             self?.setTitle(nil, for: .normal)
+        }
+    }
+}
+
+extension UITableViewHeaderFooterView {
+    override func prepareViewForSkeleton() {
+        backgroundView?.backgroundColor = .clear
+        
+        if isUserInteractionDisabledWhenSkeletonIsActive {
+            isUserInteractionEnabled = false
         }
     }
 }

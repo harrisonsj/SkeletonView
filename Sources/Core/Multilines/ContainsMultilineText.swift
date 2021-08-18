@@ -11,8 +11,9 @@ enum MultilineAssociatedKeys {
 }
 
 protocol ContainsMultilineText {
-    var constraintHeight: CGFloat? { get }
-    var numLines: Int { get }
+    var lineHeight: CGFloat { get }
+    var numberOfLines: Int { get }
+    var textAlignment: NSTextAlignment { get }
     var lastLineFillingPercent: Int { get }
     var multilineCornerRadius: Int { get }
     var multilineSpacing: CGFloat { get }

@@ -11,10 +11,8 @@ import UIKit
 public typealias ReusableCellIdentifier = String
 
 class SkeletonCollectionDataSource: NSObject {
-    static let automaticNumberOfRows = -1
-
-    public weak var originalTableViewDataSource: SkeletonTableViewDataSource?
-    public weak var originalCollectionViewDataSource: SkeletonCollectionViewDataSource?
+    weak var originalTableViewDataSource: SkeletonTableViewDataSource?
+    weak var originalCollectionViewDataSource: SkeletonCollectionViewDataSource?
     var rowHeight: CGFloat = 0.0
     var originalRowHeight: CGFloat = 0.0
     
@@ -40,7 +38,7 @@ extension SkeletonCollectionDataSource: UITableViewDataSource {
 
         let numberOfRows = originalTableViewDataSource.collectionSkeletonView(tableView, numberOfRowsInSection: section)
 
-        if numberOfRows == Self.automaticNumberOfRows {
+        if numberOfRows == UITableView.automaticNumberOfSkeletonRows {
             return tableView.estimatedNumberOfRows
         } else {
             return numberOfRows
@@ -48,8 +46,17 @@ extension SkeletonCollectionDataSource: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cellIdentifier = originalTableViewDataSource?.collectionSkeletonView(tableView, cellIdentifierForRowAt: indexPath) ?? ""
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+        guard let cell = originalTableViewDataSource?.collectionSkeletonView(tableView, skeletonCellForRowAt: indexPath) else {
+            let cellIdentifier = originalTableViewDataSource?.collectionSkeletonView(tableView, cellIdentifierForRowAt: indexPath) ?? ""
+            let fakeCell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath)
+
+            originalTableViewDataSource?.collectionSkeletonView(tableView, prepareCellForSkeleton: fakeCell, at: indexPath)
+            skeletonViewIfContainerSkeletonIsActive(container: tableView, view: fakeCell)
+            
+            return fakeCell
+        }
+
+        originalTableViewDataSource?.collectionSkeletonView(tableView, prepareCellForSkeleton: cell, at: indexPath)
         skeletonViewIfContainerSkeletonIsActive(container: tableView, view: cell)
         return cell
     }
@@ -68,7 +75,7 @@ extension SkeletonCollectionDataSource: UICollectionViewDataSource {
 
         let numberOfItems = originalCollectionViewDataSource.collectionSkeletonView(collectionView, numberOfItemsInSection: section)
 
-        if numberOfItems == Self.automaticNumberOfRows {
+        if numberOfItems == UICollectionView.automaticNumberOfSkeletonItems {
             return collectionView.estimatedNumberOfRows
         } else {
             return numberOfItems
@@ -76,8 +83,17 @@ extension SkeletonCollectionDataSource: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cellIdentifier = originalCollectionViewDataSource?.collectionSkeletonView(collectionView, cellIdentifierForItemAt: indexPath) ?? ""
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath)
+        guard let cell = originalCollectionViewDataSource?.collectionSkeletonView(collectionView, skeletonCellForItemAt: indexPath) else {
+            let cellIdentifier = originalCollectionViewDataSource?.collectionSkeletonView(collectionView, cellIdentifierForItemAt: indexPath) ?? ""
+            let fakeCell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath)
+
+            originalCollectionViewDataSource?.collectionSkeletonView(collectionView, prepareCellForSkeleton: fakeCell, at: indexPath)
+            skeletonViewIfContainerSkeletonIsActive(container: collectionView, view: fakeCell)
+            
+            return fakeCell
+        }
+
+        originalCollectionViewDataSource?.collectionSkeletonView(collectionView, prepareCellForSkeleton: cell, at: indexPath)
         skeletonViewIfContainerSkeletonIsActive(container: collectionView, view: cell)
         return cell
     }
@@ -91,7 +107,7 @@ extension SkeletonCollectionDataSource: UICollectionViewDataSource {
             return view
         }
         
-        return UICollectionReusableView()
+        return originalCollectionViewDataSource?.collectionView?(collectionView, viewForSupplementaryElementOfKind: kind, at: indexPath) ?? UICollectionReusableView()
     }
     
 }
